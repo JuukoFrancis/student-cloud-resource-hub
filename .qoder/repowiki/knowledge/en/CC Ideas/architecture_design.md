@@ -1,0 +1,1 @@
+The module scope is currently empty with no source files, configuration, or structural components present.
