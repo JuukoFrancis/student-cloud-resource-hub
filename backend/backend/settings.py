@@ -187,6 +187,7 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = os.getenv(
     'CORS_ALLOWED_ORIGINS',
     'http://localhost:3000,http://localhost:5173'
+    'https://student-cloud-resource-hub-97gn.vercel.app',
 ).split(',')
 
 CORS_ALLOW_CREDENTIALS = True
