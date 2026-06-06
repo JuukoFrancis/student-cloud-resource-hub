@@ -1,7 +1,6 @@
 import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://student-cloud-resource-hub-8.onrender.com'
-// const API_BASE_URL = 'https://student-cloud-resource-hub-8.onrender.com'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,56 +8,6 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 })
-
-// Request interceptor — attach JWT token
-api.interceptors.request.use(
-  (config) => {
-    const tokens = JSON.parse(localStorage.getItem('tokens') || '{}')
-    if (tokens.access) {
-      config.headers.Authorization = `Bearer ${tokens.access}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
-
-// Response interceptor — handle 401 and refresh token
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
-
-      const tokens = JSON.parse(localStorage.getItem('tokens') || '{}')
-      if (tokens.refresh) {
-        try {
-          const response = await axios.post(
-            `${API_BASE_URL}/api/auth/refresh/`,
-            { refresh: tokens.refresh }
-          )
-
-          const newTokens = {
-            access: response.data.access,
-            refresh: response.data.refresh || tokens.refresh,
-          }
-          localStorage.setItem('tokens', JSON.stringify(newTokens))
-
-          originalRequest.headers.Authorization = `Bearer ${newTokens.access}`
-          return api(originalRequest)
-        } catch (refreshError) {
-          localStorage.removeItem('tokens')
-          localStorage.removeItem('user')
-          window.location.href = '/login'
-          return Promise.reject(refreshError)
-        }
-      }
-    }
-
-    return Promise.reject(error)
-  }
-)
 
 // ──────────────────────────────────────────────
 // Auth API

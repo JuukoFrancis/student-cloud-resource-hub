@@ -1,27 +1,16 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
-  const { user, logout, isAdmin, isLecturer } = useAuth()
+  const { user } = useAuth()
   const location = useLocation()
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
 
   const navLinks = [
     { to: '/dashboard', label: 'Dashboard' },
     { to: '/resources', label: 'Resources' },
     { to: '/resources/upload', label: 'Upload' },
-    // { to: '/resources/shared', label: 'Shared' },
-    { to: '/profile', label: 'Profile' },
+    { to: '/admin', label: 'Admin' },
   ]
-
-  if (isAdmin) {
-    navLinks.push({ to: '/admin', label: 'Admin' })
-  }
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -54,18 +43,12 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* User Menu */}
+          {/* User Info */}
           <div className="flex items-center gap-4">
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium text-gray-900">{user?.username}</p>
               <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-gray-600 hover:text-red-600 transition-colors"
-            >
-              Logout
-            </button>
           </div>
         </div>
       </div>

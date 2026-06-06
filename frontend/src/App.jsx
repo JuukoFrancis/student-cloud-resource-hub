@@ -1,12 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { useAuth } from './context/AuthContext'
-import ProtectedRoute from './components/ProtectedRoute'
-import AdminRoute from './components/AdminRoute'
 import Navbar from './components/Navbar'
 import Sidebar from './components/Sidebar'
-import Login from './pages/auth/Login'
-import Register from './pages/auth/Register'
 import Dashboard from './pages/dashboard/Dashboard'
 import ResourceList from './pages/resources/ResourceList'
 import ResourceDetail from './pages/resources/ResourceDetail'
@@ -33,132 +28,59 @@ function AppLayout({ children }) {
 }
 
 export default function App() {
-  const { isAuthenticated, loading } = useAuth()
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    )
-  }
-
   return (
     <>
       <Toaster position="top-right" />
       <Routes>
-        {/* Public routes */}
-        <Route
-          path="/login"
-          element={!isAuthenticated ? <Navigate to="/dashboard" /> : <Login />}
-        />
-        <Route
-          path="/register"
-          element={!isAuthenticated ? <Navigate to="/dashboard" /> : <Register />}
-        />
-
-        {/* Protected routes */}
         <Route
           path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <AppLayout><Dashboard /></AppLayout>
-            </ProtectedRoute>
-          }
+          element={<AppLayout><Dashboard /></AppLayout>}
         />
         <Route
           path="/resources"
-          element={
-            <ProtectedRoute>
-              <AppLayout><ResourceList /></AppLayout>
-            </ProtectedRoute>
-          }
+          element={<AppLayout><ResourceList /></AppLayout>}
         />
         <Route
           path="/resources/upload"
-          element={
-            <ProtectedRoute>
-              <AppLayout><UploadResource /></AppLayout>
-            </ProtectedRoute>
-          }
+          element={<AppLayout><UploadResource /></AppLayout>}
         />
         <Route
           path="/resources/search"
-          element={
-            <ProtectedRoute>
-              <AppLayout><SearchResults /></AppLayout>
-            </ProtectedRoute>
-          }
+          element={<AppLayout><SearchResults /></AppLayout>}
         />
         <Route
           path="/resources/:id"
-          element={
-            <ProtectedRoute>
-              <AppLayout><ResourceDetail /></AppLayout>
-            </ProtectedRoute>
-          }
+          element={<AppLayout><ResourceDetail /></AppLayout>}
         />
         <Route
           path="/resources/shared"
-          element={
-            <ProtectedRoute>
-              <AppLayout><SharedWithMe /></AppLayout>
-            </ProtectedRoute>
-          }
+          element={<AppLayout><SharedWithMe /></AppLayout>}
         />
         <Route
           path="/resources/sharing"
-          element={
-            <ProtectedRoute>
-              <AppLayout><ManageSharing /></AppLayout>
-            </ProtectedRoute>
-          }
+          element={<AppLayout><ManageSharing /></AppLayout>}
         />
         <Route
           path="/profile"
-          element={
-            <ProtectedRoute>
-              <AppLayout><Profile /></AppLayout>
-            </ProtectedRoute>
-          }
+          element={<AppLayout><Profile /></AppLayout>}
         />
         <Route
           path="/profile/uploads"
-          element={
-            <ProtectedRoute>
-              <AppLayout><MyUploads /></AppLayout>
-            </ProtectedRoute>
-          }
+          element={<AppLayout><MyUploads /></AppLayout>}
         />
-
-        {/* Admin routes */}
         <Route
           path="/admin"
-          element={
-            <AdminRoute>
-              <AppLayout><UserManagement /></AppLayout>
-            </AdminRoute>
-          }
+          element={<AppLayout><UserManagement /></AppLayout>}
         />
         <Route
           path="/admin/resources"
-          element={
-            <AdminRoute>
-              <AppLayout><ResourceModeration /></AppLayout>
-            </AdminRoute>
-          }
+          element={<AppLayout><ResourceModeration /></AppLayout>}
         />
         <Route
           path="/admin/activity"
-          element={
-            <AdminRoute>
-              <AppLayout><ActivityMonitoring /></AppLayout>
-            </AdminRoute>
-          }
+          element={<AppLayout><ActivityMonitoring /></AppLayout>}
         />
-
-        {/* Default redirect */}
-        <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+        <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
     </>
   )

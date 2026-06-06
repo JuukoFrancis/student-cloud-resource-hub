@@ -4,7 +4,7 @@ import { authAPI } from '../../api/axios'
 import toast from 'react-hot-toast'
 
 export default function Profile() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const [form, setForm] = useState({
     first_name: user?.first_name || '',
     last_name: user?.last_name || '',

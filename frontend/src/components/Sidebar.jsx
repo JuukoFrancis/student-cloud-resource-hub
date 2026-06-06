@@ -80,10 +80,9 @@ const adminItems = [
 ]
 
 export default function Sidebar() {
-  const { isAdmin } = useAuth()
   const location = useLocation()
 
-  const allItems = isAdmin ? [...navItems, ...adminItems] : navItems
+  const allItems = [...navItems, ...adminItems]
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-4rem)] p-4">
