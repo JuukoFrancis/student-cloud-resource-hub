@@ -50,11 +50,11 @@ export default function App() {
         {/* Public routes */}
         <Route
           path="/login"
-          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />}
+          element={!isAuthenticated ? <Navigate to="/dashboard" /> : <Login />}
         />
         <Route
           path="/register"
-          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />}
+          element={!isAuthenticated ? <Navigate to="/dashboard" /> : <Register />}
         />
 
         {/* Protected routes */}
