@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from rest_framework import status, viewsets, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from .models import Resource, ActivityLog
@@ -20,7 +20,12 @@ from .serializers import (
     ResourceUploadSerializer,
 )
 from .azure_storage import azure_storage, get_content_type
-from accounts.permissions import IsOwnerOrAdmin, IsOwnerOrSharedWith, IsAdminUser
+
+
+def get_default_user():
+    """Return the default user when no auth is present."""
+    from accounts.models import User
+    return User.objects.first()
 
 
 class ResourceViewSet(viewsets.ModelViewSet):
@@ -32,8 +37,7 @@ class ResourceViewSet(viewsets.ModelViewSet):
     - Update: update metadata only (owner or admin)
     - Destroy: delete resource (owner or admin)
     """
-    permission_classes = [IsAuthenticated]
-    filter_fields = ['course', 'semester', 'resource_type', 'uploaded_by']
+    permission_classes = [AllowAny]
     search_fields = ['title', 'description', 'course']
     ordering_fields = ['created_at', 'title', 'file_size']
     ordering = ['-created_at']
@@ -55,13 +59,14 @@ class ResourceViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        resource = serializer.save(uploaded_by=request.user)
+        user = request.user if request.user.is_authenticated else get_default_user()
+        resource = serializer.save(uploaded_by=user)
 
         # Handle file upload to Azure Blob Storage
         uploaded_file = resource.file
         if uploaded_file:
             file_name = uploaded_file.name
-            blob_name = f"resources/{request.user.id}/{os.path.basename(file_name)}"
+            blob_name = f"resources/{user.id}/{os.path.basename(file_name)}"
             content_type = get_content_type(file_name)
 
             # Upload to Azure Blob Storage
@@ -85,7 +90,7 @@ class ResourceViewSet(viewsets.ModelViewSet):
 
         # Log the upload activity
         ActivityLog.objects.create(
-            user=request.user,
+            user=user,
             action=ActivityLog.Action.UPLOAD,
             resource=resource,
         )
@@ -98,8 +103,9 @@ class ResourceViewSet(viewsets.ModelViewSet):
         resource = self.get_object()
         self.check_object_permissions(request, resource)
 
+        user = request.user if request.user.is_authenticated else get_default_user()
         ActivityLog.objects.create(
-            user=request.user,
+            user=user,
             action=ActivityLog.Action.VIEW,
             resource=resource,
         )
@@ -108,28 +114,15 @@ class ResourceViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
-        """Update resource metadata — only owner or admin."""
+        """Update resource metadata."""
         resource = self.get_object()
-        self.check_object_permissions(request, resource)
-
-        if not (resource.uploaded_by == request.user or request.user.role == 'admin'):
-            return Response(
-                {'error': 'You do not have permission to edit this resource.'},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        """Delete a resource — only owner or admin."""
+        """Delete a resource."""
         resource = self.get_object()
-        self.check_object_permissions(request, resource)
 
-        if not (resource.uploaded_by == request.user or request.user.role == 'admin'):
-            return Response(
-                {'error': 'You do not have permission to delete this resource.'},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        user = request.user if request.user.is_authenticated else get_default_user()
 
         # Delete from Azure Blob Storage if file_url exists
         if resource.file_url:
@@ -138,7 +131,7 @@ class ResourceViewSet(viewsets.ModelViewSet):
 
         # Log the delete activity
         ActivityLog.objects.create(
-            user=request.user,
+            user=user,
             action=ActivityLog.Action.DELETE,
             resource=resource,
         )
@@ -161,8 +154,9 @@ class ResourceViewSet(viewsets.ModelViewSet):
             )
 
         # Log the download activity
+        user = request.user if request.user.is_authenticated else get_default_user()
         ActivityLog.objects.create(
-            user=request.user,
+            user=user,
             action=ActivityLog.Action.DOWNLOAD,
             resource=resource,
         )
@@ -176,7 +170,8 @@ class ResourceViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='my-uploads')
     def my_uploads(self, request):
         """Get resources uploaded by the current user."""
-        queryset = self.get_queryset().filter(uploaded_by=request.user)
+        user = request.user if request.user.is_authenticated else get_default_user()
+        queryset = self.get_queryset().filter(uploaded_by=user)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = ResourceListSerializer(page, many=True)
@@ -191,8 +186,7 @@ class ResourceSearchView(viewsets.GenericViewSet):
     Supports keyword search + filters.
     """
     serializer_class = ResourceListSerializer
-    permission_classes = [IsAuthenticated]
-    filter_fields = ['course', 'semester', 'resource_type']
+    permission_classes = [AllowAny]
     search_fields = ['title', 'description', 'course']
     ordering_fields = ['created_at', 'title', 'file_size']
     ordering = ['-created_at']
