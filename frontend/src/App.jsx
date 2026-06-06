@@ -32,10 +32,10 @@ export default function App() {
     <>
       <Toaster position="top-right" />
       <Routes>
-        {/* <Route
+         <Route
           path="/dashboard"
-          element={<AppLayout><Dashboard /></AppLayout>}
-        /> */}
+          element={<AppLayout><ResourceList /></AppLayout>}
+        /> 
         <Route
           path="/resources"
           element={<AppLayout><ResourceList /></AppLayout>}
