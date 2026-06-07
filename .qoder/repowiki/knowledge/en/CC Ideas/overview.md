@@ -1,1 +1,0 @@
-A placeholder module for capturing initial concepts or brainstorming notes related to the CC project.
